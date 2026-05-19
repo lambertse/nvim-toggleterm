@@ -76,6 +76,7 @@ Inside the terminal window, use the default keymaps:
 | `<A-h>` | Previous session |
 | `<A-r>` | Rename current session (prompts for name) |
 | `<A-1>` … `<A-9>` | Jump directly to session 1–9 |
+| `<A-Left>` / `<A-Right>` | Move shell cursor word-backward / word-forward |
 
 These work in both **normal** and **terminal** mode inside the floating window.
 
@@ -102,6 +103,9 @@ require("nvim-toggleterm").setup({
   -- Format string with a single %d placeholder. Bound for indices 1..9 to
   -- jump directly to that session. Set to "" or nil to disable.
   keymap_switch        = "<A-%d>",
+
+  keymap_word_left     = "<A-Left>",   -- shell readline backward-word
+  keymap_word_right    = "<A-Right>",  -- shell readline forward-word
 })
 ```
 

@@ -22,6 +22,12 @@ M.defaults = {
   -- jump directly to that session (e.g. "<A-%d>" → <A-1>..<A-9>).
   -- Set to "" or nil to disable.
   keymap_switch       = "<A-%d>",
+
+  -- Shell command-line word navigation (sends Meta-b / Meta-f, i.e. readline
+  -- backward-word / forward-word). Active in terminal and normal mode inside
+  -- the terminal window. Set to "" or nil to disable.
+  keymap_word_left    = "<A-Left>",
+  keymap_word_right   = "<A-Right>",
 }
 
 function M.merge(user_opts)

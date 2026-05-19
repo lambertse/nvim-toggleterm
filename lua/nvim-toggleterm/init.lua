@@ -84,6 +84,24 @@ local function set_buf_keymaps(buf)
         { buffer = buf, silent = true, desc = "Switch to terminal " .. i })
     end
   end
+
+  local function send_to_term(seq)
+    local chan = vim.bo[buf].channel
+    if chan and chan > 0 then
+      vim.api.nvim_chan_send(chan, seq)
+    end
+  end
+  local function bind_word(lhs, seq, desc)
+    if not (lhs and lhs ~= "") then return end
+    vim.keymap.set("t", lhs, function() send_to_term(seq) end,
+      { buffer = buf, silent = true, desc = desc })
+    vim.keymap.set("n", lhs, function()
+      vim.cmd.startinsert()
+      send_to_term(seq)
+    end, { buffer = buf, silent = true, desc = desc })
+  end
+  bind_word(o.keymap_word_left,  "\27b", "Shell word backward")
+  bind_word(o.keymap_word_right, "\27f", "Shell word forward")
 end
 
 local function create_session(name)

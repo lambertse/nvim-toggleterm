@@ -37,6 +37,13 @@ local function escape_winbar(s)
   return tostring(s):gsub("%%", "%%%%")
 end
 
+-- Schedule `startinsert` so it runs after `vim.ui.input` finishes opening its
+-- prompt buffer (used by custom UIs like dressing.nvim). For the default
+-- cmdline-based input this is a harmless no-op.
+local function enter_insert_for_input()
+  vim.schedule(function() pcall(vim.cmd.startinsert) end)
+end
+
 -- =========
 -- Winbar
 -- =========
@@ -180,6 +187,7 @@ function M.open()
       state.active_idx = create_session(input)
       open_window_now()
     end)
+    enter_insert_for_input()
     return
   end
 
@@ -230,6 +238,7 @@ function M.new_terminal(name)
         M.open()
       end
     end)
+    enter_insert_for_input()
   end
 end
 
@@ -296,6 +305,7 @@ function M.rename_terminal(name)
         update_winbar()
       end
     end)
+    enter_insert_for_input()
   end
 end
 

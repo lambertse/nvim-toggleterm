@@ -18,6 +18,10 @@ M.defaults = {
   keymap_next         = "<A-l>", -- switch to next session
   keymap_prev         = "<A-h>", -- switch to previous session
   keymap_rename       = "<A-r>", -- rename the active session
+  -- Format string with a single `%d` placeholder. Bound for indices 1..9 to
+  -- jump directly to that session (e.g. "<A-%d>" → <A-1>..<A-9>).
+  -- Set to "" or nil to disable.
+  keymap_switch       = "<A-%d>",
 }
 
 function M.merge(user_opts)

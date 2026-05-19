@@ -44,7 +44,12 @@ local function update_winbar()
   if not is_valid_win(state.win) then return end
   local parts = {}
   for i, session in ipairs(state.sessions) do
-    local label = escape_winbar(i .. ":" .. session.name)
+    local label
+    if session.name == nil or session.name == "" then
+      label = tostring(i)
+    else
+      label = escape_winbar(i .. ":" .. session.name)
+    end
     if i == state.active_idx then
       parts[#parts + 1] = "%#TabLineSel# " .. label .. " "
     else
@@ -71,12 +76,20 @@ local function set_buf_keymaps(buf)
   map_if_set({ "t", "n" }, o.keymap_next,           function() M.next_terminal() end,  buf)
   map_if_set({ "t", "n" }, o.keymap_prev,           function() M.prev_terminal() end,  buf)
   map_if_set({ "t", "n" }, o.keymap_rename,         function() M.rename_terminal() end, buf)
+
+  if o.keymap_switch and o.keymap_switch ~= "" and o.keymap_switch:find("%%d") then
+    for i = 1, 9 do
+      local lhs = o.keymap_switch:format(i)
+      vim.keymap.set({ "t", "n" }, lhs, function() M.switch_terminal(i) end,
+        { buffer = buf, silent = true, desc = "Switch to terminal " .. i })
+    end
+  end
 end
 
 local function create_session(name)
   local id = state._next_id
   state._next_id = state._next_id + 1
-  name = name or ("Terminal " .. id)
+  name = name or ""
 
   local buf = vim.api.nvim_create_buf(false, true)
   -- NOTE: `termopen` attaches a job without creating a window.
@@ -144,9 +157,9 @@ function M.open()
   end
 
   if #state.sessions == 0 then
-    vim.ui.input({ prompt = "New terminal name: ", default = "main-term" }, function(input)
+    vim.ui.input({ prompt = "New terminal name (optional): ", default = "" }, function(input)
       if input == nil then return end  -- user cancelled
-      state.active_idx = create_session(input ~= "" and input or "main-term")
+      state.active_idx = create_session(input)
       open_window_now()
     end)
     return
@@ -178,7 +191,7 @@ function M.is_open()
 end
 
 -- Create a new terminal session and immediately switch to it.
--- Always prompts for a name; pass one explicitly to skip the prompt.
+-- Always prompts for a name when none is provided; an empty name is allowed.
 function M.new_terminal(name)
   if name then
     local idx = create_session(name)
@@ -189,10 +202,9 @@ function M.new_terminal(name)
       M.open()
     end
   else
-    local default = "Terminal " .. state._next_id
-    vim.ui.input({ prompt = "New terminal name: ", default = default }, function(input)
+    vim.ui.input({ prompt = "New terminal name (optional): ", default = "" }, function(input)
       if input == nil then return end  -- user cancelled
-      local idx = create_session(input ~= "" and input or nil)
+      local idx = create_session(input)
       if is_valid_win(state.win) then
         load_session_into_win(idx)
       else
